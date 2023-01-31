@@ -5,7 +5,6 @@ edition = "2021"
 authors = ["Brett 'xNWP' Anthony <nwpbusiness@gmail.com>"]
 description = "WIP: a library for opening (editing planned) source engine demo files."
 readme = "README.md"
-license = "MIT"
 license-file = "LICENSE"
 repository = "https://github.com/xNWP/source-demo-tool/"
 
