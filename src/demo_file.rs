@@ -318,7 +318,7 @@ impl DemoFile {
     }
 
 
-    pub fn get_all_user_message_data(self: &Self) -> Vec<&UserMessageData> {
+    fn get_all_user_message_data(self: &Self) -> Vec<&UserMessageData> {
         let mut user_message_data = Vec::new();
         
         for f in &self.frames {
