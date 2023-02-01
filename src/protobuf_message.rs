@@ -1,11 +1,10 @@
-use std::{io::Read, collections::BTreeMap};
+use std::io::Read;
 use buf_redux::BufReader;
 use source_demo_tool_impl_proc_macros::event;
 
 use crate::{parse_tools::{parse_varint, parse_u32, ParseVarIntExit}, event_data::EventData, demo_file::packet::protobuf_value::ProtobufValue};
 
 pub trait ProtobufMessageEnumTraits {
-    fn to_map_new(&self) -> BTreeMap<&'static str, ProtobufValue>;
     fn to_vec(&self) -> Vec<(&'static str, ProtobufValue)>;
 }
 
