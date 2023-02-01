@@ -46,7 +46,6 @@ fn gen_message_container(message_container: &MessagesContainer) -> TokenStream {
     let parse_from_bufredux_reader_tokens = gen_message_container_parse_from_bufredux_reader(&message_container);
     let enum_declaration_tokens = gen_message_container_enum_declaration(&message_container);
     let parse_from_id_and_bufredux_reader_tokens = gen_message_container_parse_from_id_and_bufredux_reader(&message_container);
-    let impl_to_map_tokens = gen_message_container_impl_to_map(&message_container);
     
     let impl_protobuf_message_enum_traits_tokens = gen_message_container_impl_protobuf_message_traits(&message_container);
 
@@ -59,7 +58,6 @@ fn gen_message_container(message_container: &MessagesContainer) -> TokenStream {
         impl #ident {
             #parse_from_bufredux_reader_tokens
             #parse_from_id_and_bufredux_reader_tokens
-            #impl_to_map_tokens
         }
 
         #impl_protobuf_message_enum_traits_tokens
@@ -238,26 +236,6 @@ fn gen_message_container_impl_to_map_new(message_container: &MessagesContainer) 
     }
 }
 
-fn gen_message_container_impl_to_map(message_container: &MessagesContainer) -> TokenStream {
-    let enum_ident = message_container.get_ident();
-    let mut match_funcs = Vec::new();
-
-    for msg in &message_container.messages {
-        let msg_ident = msg.name.clone();
-        match_funcs.push(quote!{
-            #enum_ident :: #msg_ident (msg_data) => msg_data.to_map()
-        });
-    }
-
-    quote!{
-        pub fn to_map(self) -> std::collections::BTreeMap<&'static str, Box<dyn ToString>> {
-            match self {
-                #( #match_funcs ),*
-            }
-        }
-    }
-}
-
 fn gen_message_container_impl_to_string(message_container: &MessagesContainer) -> TokenStream {
     let mut names = Vec::new();
     let mut name_strings = Vec::new();
@@ -347,7 +325,6 @@ fn gen_message_struct_def(msg: &Message) -> TokenStream {
 fn gen_message_struct_impl(msg: &Message) -> TokenStream {
     let struct_ident = msg.get_ident();
     let impl_from_protobuf_messages = gen_message_impl_from_protobuf_messages(msg);
-    let impl_to_map = gen_message_impl_to_map(msg);
     let impl_to_map_new = gen_message_impl_to_map_new(msg);
 
     let mut sub_msg_impls = Vec::new();
@@ -365,7 +342,6 @@ fn gen_message_struct_impl(msg: &Message) -> TokenStream {
     quote!{
         impl #struct_ident {
             #impl_from_protobuf_messages
-            #impl_to_map
             #impl_to_map_new
         }
 
@@ -439,51 +415,6 @@ fn gen_message_impl_to_map_new(msg: &Message) -> TokenStream {
             };
             use std::collections::BTreeMap;
             let mut rval = BTreeMap::new();
-
-            #( #insert_funcs )*
-
-            rval
-        }
-    }
-}
-
-fn gen_message_impl_to_map(msg: &Message) -> TokenStream {
-    let mut insert_funcs = Vec::new();
-    for field in &msg.fields { // TODO: sub-fields/proto, vecs
-        let field_name_ident = Ident::new(
-            format!("{}", field.name).as_str(),
-            Span::call_site()
-        );
-        let field_name_string = &field.name;
-
-        let value_expr;
-
-        if field.is_repeated
-        || field.wire_type == WireType::Proto
-        || field.wire_type == WireType::Length {
-            continue
-        }
-
-        value_expr = quote! {
-            match self. #field_name_ident {
-                Some(v) => Box::new(v),
-                None => Box::new("None")
-            }
-        };
-
-        insert_funcs.push(quote!{
-            {
-                let name = #field_name_string;
-                let val: Box<dyn ToString> = #value_expr;
-                rval.insert(name, val);
-            }
-        });
-    }
-
-    quote!{
-        pub fn to_map(self) -> std::collections::BTreeMap<&'static str, Box<dyn ToString>> {
-            let mut rval: std::collections::BTreeMap<&'static str, Box<dyn ToString>>
-                = std::collections::BTreeMap::new();
 
             #( #insert_funcs )*
 
