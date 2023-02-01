@@ -69,11 +69,13 @@ fn gen_message_container_impl_protobuf_message_traits
     let ident = msg_container.get_ident();
     
     let impl_to_map_new_tokens = gen_message_container_impl_to_map_new(&msg_container);
-    
+    let impl_to_vec_tokens = gen_message_container_impl_to_vec(&msg_container);
+
     quote!{ 
         impl crate::protobuf_message::ProtobufMessageEnumTraits
             for #ident {
                 #impl_to_map_new_tokens
+                #impl_to_vec_tokens
             }
         }
 }
@@ -236,6 +238,30 @@ fn gen_message_container_impl_to_map_new(message_container: &MessagesContainer) 
     }
 }
 
+fn gen_message_container_impl_to_vec(message_container: &MessagesContainer) -> TokenStream {
+    let enum_ident = message_container.get_ident();
+    let mut match_funcs = Vec::new();
+
+    for msg in &message_container.messages {
+        let msg_ident = msg.name.clone();
+        match_funcs.push(quote!{
+            #enum_ident :: #msg_ident (msg_data) => msg_data.to_vec()
+        });
+    }
+
+    quote!{
+        fn to_vec(&self)
+            -> Vec<(
+                &'static str,
+                crate::demo_file::packet::protobuf_value::ProtobufValue
+            )> {
+            match self {
+                #( #match_funcs ),*
+            }
+        }
+    }
+}
+
 fn gen_message_container_impl_to_string(message_container: &MessagesContainer) -> TokenStream {
     let mut names = Vec::new();
     let mut name_strings = Vec::new();
@@ -326,6 +352,7 @@ fn gen_message_struct_impl(msg: &Message) -> TokenStream {
     let struct_ident = msg.get_ident();
     let impl_from_protobuf_messages = gen_message_impl_from_protobuf_messages(msg);
     let impl_to_map_new = gen_message_impl_to_map_new(msg);
+    let impl_to_vec = gen_message_impl_to_vec(msg);
 
     let mut sub_msg_impls = Vec::new();
     for f in &msg.fields {
@@ -343,6 +370,7 @@ fn gen_message_struct_impl(msg: &Message) -> TokenStream {
         impl #struct_ident {
             #impl_from_protobuf_messages
             #impl_to_map_new
+            #impl_to_vec
         }
 
         #( #sub_msg_impls )*
@@ -415,6 +443,72 @@ fn gen_message_impl_to_map_new(msg: &Message) -> TokenStream {
             };
             use std::collections::BTreeMap;
             let mut rval = BTreeMap::new();
+
+            #( #insert_funcs )*
+
+            rval
+        }
+    }
+}
+
+fn gen_message_impl_to_vec(msg: &Message) -> TokenStream {
+    let mut insert_funcs = Vec::new();
+    for field in &msg.fields {
+        let field_name_ident = Ident::new(
+            format!("{}", field.name).as_str(),
+            Span::call_site()
+        );
+        let field_name_string = &field.name;
+
+        let value_inner_expr = match field.wire_type {
+            WireType::VarInt  => quote!{ ProtobufValue:: VarInt(*v) },
+            WireType::Length  => quote!{ ProtobufValue:: Length(v.clone()) },
+            WireType::String  => quote!{ ProtobufValue:: String(v.clone()) },
+            WireType::Fixed32 => quote!{ ProtobufValue::Fixed32(*v) },
+            WireType::Float32 => quote!{ ProtobufValue::Float32(*v) },
+            WireType::Proto   => quote!{ ProtobufValue::  Proto(v.to_vec()) },
+        };
+
+        let value_expr = {
+            if field.is_repeated {
+                quote! {
+                    if self. #field_name_ident .is_empty() {
+                        ProtobufValue::None
+                    } else {
+                        let mut proto_vals = Vec::new();
+                        for v in &self. #field_name_ident {
+                            proto_vals.push( #value_inner_expr );
+                        }
+                        ProtobufValue::Repeated(proto_vals)
+                    }
+                }
+            } else {
+                quote! {
+                    match &self. #field_name_ident {
+                        Some(v) => #value_inner_expr,
+                        None => ProtobufValue::None
+                    }
+                }
+            }
+        };
+
+        insert_funcs.push(quote! {
+            {
+                let name = #field_name_string;
+                let val = #value_expr;
+                rval.push((name, val));
+            }
+        })
+    }
+
+    quote! {
+        pub fn to_vec(&self) -> Vec<
+            (&'static str, crate::demo_file::packet::protobuf_value::ProtobufValue)
+        > {
+            use crate::demo_file::packet::protobuf_value::{
+                ProtobufValue, ProtobufField
+            };
+            let mut rval = Vec::new();
 
             #( #insert_funcs )*
 

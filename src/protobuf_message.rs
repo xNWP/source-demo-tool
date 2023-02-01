@@ -6,6 +6,7 @@ use crate::{parse_tools::{parse_varint, parse_u32, ParseVarIntExit}, event_data:
 
 pub trait ProtobufMessageEnumTraits {
     fn to_map_new(&self) -> BTreeMap<&'static str, ProtobufValue>;
+    fn to_vec(&self) -> Vec<(&'static str, ProtobufValue)>;
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
