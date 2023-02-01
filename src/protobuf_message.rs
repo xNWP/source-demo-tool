@@ -77,7 +77,7 @@ impl ProtobufMessage {
 
         let field_number = ((tag & !0b111) >> 3) as u8;
 
-        Ok(ProtobufMessage { message, field_number })     
+        Ok(ProtobufMessage { message, field_number })
     }
 }
 

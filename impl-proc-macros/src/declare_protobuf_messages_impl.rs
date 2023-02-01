@@ -46,15 +46,15 @@ fn gen_message_container(message_container: &MessagesContainer) -> TokenStream {
     let parse_from_bufredux_reader_tokens = gen_message_container_parse_from_bufredux_reader(&message_container);
     let enum_declaration_tokens = gen_message_container_enum_declaration(&message_container);
     let parse_from_id_and_bufredux_reader_tokens = gen_message_container_parse_from_id_and_bufredux_reader(&message_container);
-    
+
     let impl_protobuf_message_enum_traits_tokens = gen_message_container_impl_protobuf_message_traits(&message_container);
 
     let ident = message_container.get_ident();
-    
+
     quote!(
         #enum_declaration_tokens
         #impl_to_string_tokens
-        
+
         impl #ident {
             #parse_from_bufredux_reader_tokens
             #parse_from_id_and_bufredux_reader_tokens
@@ -67,11 +67,11 @@ fn gen_message_container(message_container: &MessagesContainer) -> TokenStream {
 fn gen_message_container_impl_protobuf_message_traits
 (msg_container: &MessagesContainer) -> TokenStream {
     let ident = msg_container.get_ident();
-    
+
     let impl_to_map_new_tokens = gen_message_container_impl_to_map_new(&msg_container);
     let impl_to_vec_tokens = gen_message_container_impl_to_vec(&msg_container);
 
-    quote!{ 
+    quote!{
         impl crate::protobuf_message::ProtobufMessageEnumTraits
             for #ident {
                 #impl_to_map_new_tokens
