@@ -20,7 +20,7 @@ use self::{
     packet::netmessage::{
         NetMessage,
         GameEventListData,
-        ServerInfoData, 
+        ServerInfoData,
         UserMessageData,
     },
     packet::usermessage::{
@@ -277,7 +277,7 @@ impl DemoFile {
 
                                         let key_type: FullGameEventKeyType = listing.key_type.unwrap().try_into().unwrap();
                                         let key_name = listing.key_name.as_ref().unwrap().clone();
-                                        
+
                                         let mut val_string = None;
                                         let mut val_float = None;
                                         let mut val_int = None;
@@ -292,7 +292,7 @@ impl DemoFile {
                                             FullGameEventKeyType::Bool => val_bool = Some(*ev.val_bool.as_ref().unwrap() > 0)
                                         }
 
-                                        event_keys.push(FullGameEventKey{ 
+                                        event_keys.push(FullGameEventKey{
                                             key_name,
                                             key_type,
                                             val_string,
@@ -318,17 +318,18 @@ impl DemoFile {
     }
 
 
-    fn get_all_user_message_data(self: &Self) -> Vec<(usize, &UserMessageData)> {
+    fn get_all_user_message_data(self: &Self) -> Vec<(usize, usize, &UserMessageData)> {
         let mut user_message_data = Vec::new();
-        
+
         for it in 0..self.frames.len() {
             let f = &self.frames[it];
             if let Command::Packet(pd) = &f.command {
-                for nmsg in &pd.network_messages {
+                for jt in 0..pd.network_messages.len() {
+                    let nmsg = &pd.network_messages[jt];
                     let msg = nmsg.message.as_ref().unwrap();
                     match msg {
                         NetMessage::UserMessage(umd) => {
-                            user_message_data.push((it, umd));
+                            user_message_data.push((it, jt, umd));
                         },
                         _ => continue
                     }
@@ -339,28 +340,36 @@ impl DemoFile {
         user_message_data
     }
 
-    pub fn get_user_messages(self: &Self) -> Vec<(usize, packet::MessageParseReturn<UserMessage>)> {
+    pub fn get_user_messages(self: &Self) -> Vec<ParsedUserMessage> {
         let mut user_messages = Vec::new();
 
         let all_user_message_data = self.get_all_user_message_data();
-        
+
         for msg in all_user_message_data {
-            let data = msg.1.msg_data.as_ref().unwrap();
+            let data = msg.2.msg_data.as_ref().unwrap();
             let mut reader = BufReader::with_capacity(data.len(), data.as_slice());
             reader.read_into_buf().unwrap();
 
-            match UserMessage::parse_from_id_and_bufredux_reader(msg.1.msg_type.unwrap(), &mut reader) {
-                Ok((inner_msg, warns)) => user_messages.push((msg.0, packet::MessageParseReturn {
-                    message: Some(inner_msg), warnings: Some(warns), err: None
-                })),
-                Err(e) => user_messages.push((msg.0, packet::MessageParseReturn {
-                    message: None, warnings: None, err: Some(e)
-                }))
+            match UserMessage::parse_from_id_and_bufredux_reader(msg.2.msg_type.unwrap(), &mut reader) {
+                Ok((inner_msg, warns)) => user_messages.push( ParsedUserMessage {
+                    frame_index: msg.0, message_index: msg.1,
+                    message_return: packet::MessageParseReturn { message: Some(inner_msg), warnings: Some(warns), err: None }
+                }),
+                Err(e) => user_messages.push( ParsedUserMessage {
+                    frame_index: msg.0, message_index: msg.1,
+                    message_return: packet::MessageParseReturn { message: None, warnings: None, err: Some(e) }
+                })
             }
         }
 
         user_messages
     }
+}
+
+pub struct ParsedUserMessage {
+    pub frame_index: usize,
+    pub message_index: usize,
+    pub message_return: packet::MessageParseReturn<UserMessage>,
 }
 
 #[derive(Debug)]
