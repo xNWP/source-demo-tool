@@ -1,0 +1,27 @@
+name: Build on Main Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-release:
+    name: Build Release Files
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        profile: [--release, ""]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Install Stable Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: ${{ matrix.profile }}
