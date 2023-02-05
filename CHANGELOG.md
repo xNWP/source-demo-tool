@@ -2,6 +2,10 @@
 
 ### Latest/Nightly (this branch)
 
+### v0.6.0
+- Features
+    - FullGameEvent now includes frame and message index.
+
 ### v0.5.0
 - Features
     - ParsedUserMessage now contains the frame tick for convenience.

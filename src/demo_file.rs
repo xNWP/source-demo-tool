@@ -248,10 +248,12 @@ impl DemoFile {
             None => return events
         };
 
-        for f in &self.frames {
+        for frame_index in 0..self.frames.len() {
+            let f = &self.frames[frame_index];
             match &f.command {
                 Command::Packet(pd) => {
-                    for msg in &pd.network_messages {
+                    for message_index in 0..pd.network_messages.len() {
+                        let msg = &pd.network_messages[message_index];
                         if let Some(nmsg) = &msg.message {
                             match &nmsg {
                                 NetMessage::GameEvent(ge) => {
@@ -303,7 +305,14 @@ impl DemoFile {
                                     }
                                     let event_name = event_listing.name.as_ref().unwrap().clone();
                                     let event_tick = f.tick;
-                                    events.push( FullGameEvent { event_id, event_name, event_keys, event_tick })
+                                    events.push( FullGameEvent {
+                                        event_id,
+                                        event_name,
+                                        event_keys,
+                                        event_tick,
+                                        frame_index,
+                                        message_index,
+                                    })
                                 },
                                 _ => continue
                             }
@@ -392,7 +401,9 @@ pub struct FullGameEvent {
     pub event_name: String,
     pub event_id: u64,
     pub event_tick: i32,
-    pub event_keys: Vec<FullGameEventKey>
+    pub event_keys: Vec<FullGameEventKey>,
+    pub frame_index: usize,
+    pub message_index: usize,
 }
 
 #[derive(Debug, Clone)]
