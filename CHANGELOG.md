@@ -2,6 +2,10 @@
 
 ### Latest/Nightly (this branch)
 
+### v0.6.3
+- Changes
+    - added Self: Sized bound for method type_count. 
+
 ### v0.6.2
 - Changes
     - made type_count a static function.
