@@ -2,6 +2,10 @@
 
 ### Latest/Nightly (this branch)
 
+### v0.5.0
+- Features
+    - ParsedUserMessage now contains the frame tick for convenience.
+
 ### 0.4.2
 - Features
     - added Clone to various structs

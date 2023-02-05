@@ -318,18 +318,19 @@ impl DemoFile {
     }
 
 
-    fn get_all_user_message_data(self: &Self) -> Vec<(usize, usize, &UserMessageData)> {
+    fn get_all_user_message_data(self: &Self) -> Vec<(usize, usize, i32, &UserMessageData)> {
         let mut user_message_data = Vec::new();
 
         for it in 0..self.frames.len() {
             let f = &self.frames[it];
+            let tick = f.tick;
             if let Command::Packet(pd) = &f.command {
                 for jt in 0..pd.network_messages.len() {
                     let nmsg = &pd.network_messages[jt];
                     let msg = nmsg.message.as_ref().unwrap();
                     match msg {
                         NetMessage::UserMessage(umd) => {
-                            user_message_data.push((it, jt, umd));
+                            user_message_data.push((it, jt, tick, umd));
                         },
                         _ => continue
                     }
@@ -346,18 +347,30 @@ impl DemoFile {
         let all_user_message_data = self.get_all_user_message_data();
 
         for msg in all_user_message_data {
-            let data = msg.2.msg_data.as_ref().unwrap();
+            let data = msg.3.msg_data.as_ref().unwrap();
             let mut reader = BufReader::with_capacity(data.len(), data.as_slice());
             reader.read_into_buf().unwrap();
 
-            match UserMessage::parse_from_id_and_bufredux_reader(msg.2.msg_type.unwrap(), &mut reader) {
+            match UserMessage::parse_from_id_and_bufredux_reader(msg.3.msg_type.unwrap(), &mut reader) {
                 Ok((inner_msg, warns)) => user_messages.push( ParsedUserMessage {
-                    frame_index: msg.0, message_index: msg.1,
-                    message_return: packet::MessageParseReturn { message: Some(inner_msg), warnings: Some(warns), err: None }
+                    frame_index: msg.0,
+                    message_index: msg.1,
+                    tick: msg.2,
+                    message_return: packet::MessageParseReturn {
+                        message: Some(inner_msg),
+                        warnings: Some(warns),
+                        err: None,
+                    }
                 }),
                 Err(e) => user_messages.push( ParsedUserMessage {
-                    frame_index: msg.0, message_index: msg.1,
-                    message_return: packet::MessageParseReturn { message: None, warnings: None, err: Some(e) }
+                    frame_index: msg.0,
+                    message_index: msg.1,
+                    tick: msg.2,
+                    message_return: packet::MessageParseReturn {
+                        message: None,
+                        warnings: None,
+                        err: Some(e)
+                    }
                 })
             }
         }
@@ -371,6 +384,7 @@ pub struct ParsedUserMessage {
     pub frame_index: usize,
     pub message_index: usize,
     pub message_return: packet::MessageParseReturn<UserMessage>,
+    pub tick: i32,
 }
 
 #[derive(Debug, Clone)]
