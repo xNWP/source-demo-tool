@@ -42,7 +42,6 @@ pub fn declare_protobuf_messages(tokens: proc_macro::TokenStream) -> proc_macro:
 }
 
 fn gen_message_container(message_container: &MessagesContainer) -> TokenStream {
-    let impl_to_string_tokens = gen_message_container_impl_to_string(&message_container);
     let parse_from_bufredux_reader_tokens = gen_message_container_parse_from_bufredux_reader(&message_container);
     let enum_declaration_tokens = gen_message_container_enum_declaration(&message_container);
     let parse_from_id_and_bufredux_reader_tokens = gen_message_container_parse_from_id_and_bufredux_reader(&message_container);
@@ -53,7 +52,6 @@ fn gen_message_container(message_container: &MessagesContainer) -> TokenStream {
 
     quote!(
         #enum_declaration_tokens
-        #impl_to_string_tokens
 
         impl #ident {
             #parse_from_bufredux_reader_tokens
@@ -70,12 +68,14 @@ fn gen_message_container_impl_protobuf_message_traits
 
     let impl_to_vec_tokens = gen_message_container_impl_to_vec(&msg_container);
     let impl_type_count_tokens = gen_message_container_impl_type_count(&msg_container);
+    let impl_to_str_tokens = gen_message_container_impl_to_str(&msg_container);
 
     quote!{
         impl crate::protobuf_message::ProtobufMessageEnumTraits
             for #ident {
                 #impl_to_vec_tokens
                 #impl_type_count_tokens
+                #impl_to_str_tokens
             }
         }
 }
@@ -248,7 +248,7 @@ fn gen_message_container_impl_to_vec(message_container: &MessagesContainer) -> T
     }
 }
 
-fn gen_message_container_impl_to_string(message_container: &MessagesContainer) -> TokenStream {
+fn gen_message_container_impl_to_str(message_container: &MessagesContainer) -> TokenStream {
     let mut names = Vec::new();
     let mut name_strings = Vec::new();
     for msg in &message_container.messages {
@@ -256,14 +256,10 @@ fn gen_message_container_impl_to_string(message_container: &MessagesContainer) -
         name_strings.push(msg.name.to_string());
     }
 
-    let ident = message_container.get_ident();
-
     quote!(
-        impl ToString for #ident {
-            fn to_string(&self) -> String {
-                match *self {
-                    #( Self:: #names (_) => #name_strings .into() ),*
-                }
+        fn to_str(&self) -> &'static str {
+            match *self {
+                #( Self:: #names (_) => #name_strings ),*
             }
         }
     ).into()

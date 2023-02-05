@@ -7,6 +7,7 @@ use crate::{parse_tools::{parse_varint, parse_u32, ParseVarIntExit}, event_data:
 pub trait ProtobufMessageEnumTraits {
     fn to_vec(&self) -> Vec<(&'static str, ProtobufValue)>;
     fn type_count() -> usize where Self: Sized;
+    fn to_str(&self) -> &'static str;
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]

@@ -2,6 +2,10 @@
 
 ### Latest/Nightly (this branch)
 
+### v0.7.0
+- Changes
+    - moved impl ToString to enum traits as to_str, changed return signature to &'static str.
+
 ### v0.6.3
 - Changes
     - added Self: Sized bound for method type_count. 
