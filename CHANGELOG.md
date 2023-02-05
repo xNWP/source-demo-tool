@@ -2,6 +2,12 @@
 
 ### Latest/Nightly (this branch)
 
+### v0.7.1
+- Bug Fix
+    - Fixed missing proc-macros upgrade in v0.7.0.
+- Internal
+    - set source-demo-tool-impl-proc-macros to 0.3.3
+
 ### v0.7.0
 - Changes
     - moved impl ToString to enum traits as to_str, changed return signature to &'static str.
