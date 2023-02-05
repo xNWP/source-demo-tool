@@ -2,6 +2,12 @@
 
 ### Latest/Nightly (this branch)
 
+### v0.6.1
+- Features
+    - Added type_count for protobuf messages, returns the number of messages in the enum.
+- Internal
+    - set source-demo-tool-impl-proc-macros to 0.3.1
+
 ### v0.6.0
 - Features
     - FullGameEvent now includes frame and message index.

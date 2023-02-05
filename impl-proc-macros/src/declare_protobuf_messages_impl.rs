@@ -69,13 +69,24 @@ fn gen_message_container_impl_protobuf_message_traits
     let ident = msg_container.get_ident();
 
     let impl_to_vec_tokens = gen_message_container_impl_to_vec(&msg_container);
+    let impl_type_count_tokens = gen_message_container_impl_type_count(&msg_container);
 
     quote!{
         impl crate::protobuf_message::ProtobufMessageEnumTraits
             for #ident {
                 #impl_to_vec_tokens
+                #impl_type_count_tokens
             }
         }
+}
+
+fn gen_message_container_impl_type_count(msg_container: &MessagesContainer) -> TokenStream {
+    let count = msg_container.messages.len();
+    quote! {
+        fn type_count(&self) -> usize {
+            #count
+        }
+    }
 }
 
 fn gen_message_container_enum_declaration(message_container: &MessagesContainer) -> TokenStream {

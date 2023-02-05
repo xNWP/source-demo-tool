@@ -118,7 +118,7 @@ dependencies = [
 
 [[package]]
 name = "source-demo-tool"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "async-channel",
  "buf_redux",
@@ -127,7 +127,7 @@ dependencies = [
 
 [[package]]
 name = "source-demo-tool-impl-proc-macros"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "proc-macro2",
  "quote",
