@@ -83,7 +83,7 @@ fn gen_message_container_impl_protobuf_message_traits
 fn gen_message_container_impl_type_count(msg_container: &MessagesContainer) -> TokenStream {
     let count = msg_container.messages.len();
     quote! {
-        fn type_count(&self) -> usize {
+        fn type_count() -> usize {
             #count
         }
     }

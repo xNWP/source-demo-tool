@@ -2,6 +2,12 @@
 
 ### Latest/Nightly (this branch)
 
+### v0.6.2
+- Changes
+    - made type_count a static function.
+- Internal
+    - set source-demo-tool-impl-proc-macros to 0.3.2
+
 ### v0.6.1
 - Features
     - Added type_count for protobuf messages, returns the number of messages in the enum.
