@@ -28,7 +28,7 @@ use self::{
     }
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DemoFile {
     pub path: PathBuf,
     pub header: DemoHeader,
@@ -366,13 +366,14 @@ impl DemoFile {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ParsedUserMessage {
     pub frame_index: usize,
     pub message_index: usize,
     pub message_return: packet::MessageParseReturn<UserMessage>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FullGameEvent {
     pub event_name: String,
     pub event_id: u64,
@@ -380,7 +381,7 @@ pub struct FullGameEvent {
     pub event_keys: Vec<FullGameEventKey>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FullGameEventKey {
     pub   key_name: String,
     pub   key_type: FullGameEventKeyType,
@@ -390,7 +391,7 @@ pub struct FullGameEventKey {
     pub   val_bool: Option<bool>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FullGameEventKeyType {
     String,
     Float,
