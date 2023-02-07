@@ -2,6 +2,10 @@
 
 ### Latest/Nightly (this branch)
 
+### v0.7.2
+- Changes
+    - Added Sync + Send for ProtobufMessageEnumTraits.
+
 ### v0.7.1
 - Bug Fix
     - Fixed missing proc-macros upgrade in v0.7.0.

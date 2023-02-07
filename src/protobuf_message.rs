@@ -4,7 +4,7 @@ use source_demo_tool_impl_proc_macros::event;
 
 use crate::{parse_tools::{parse_varint, parse_u32, ParseVarIntExit}, event_data::EventData, demo_file::packet::protobuf_value::ProtobufValue};
 
-pub trait ProtobufMessageEnumTraits {
+pub trait ProtobufMessageEnumTraits: Send + Sync {
     fn to_vec(&self) -> Vec<(&'static str, ProtobufValue)>;
     fn type_count() -> usize where Self: Sized;
     fn to_str(&self) -> &'static str;
