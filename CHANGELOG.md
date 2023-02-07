@@ -1,9 +1,13 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.7.3
 - Changes
     - Added (made public) get_game_event_list for DemoFile.
     - Added get_id_map for ProtobufMessageEnumTraits.
+- Internal
+    - set source-demo-tool-impl-proc-macros to 0.3.4
 
 ### v0.7.2
 - Changes
