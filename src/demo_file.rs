@@ -221,7 +221,7 @@ impl DemoFile {
         None
     }
 
-    fn get_game_event_list(self: &Self) -> Option<&GameEventListData> {
+    pub fn get_game_event_list(self: &Self) -> Option<&GameEventListData> {
         for f in &self.sign_on_frames {
             match &f.command {
                 Command::SignOn(pd) => {

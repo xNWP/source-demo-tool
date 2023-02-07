@@ -69,6 +69,7 @@ fn gen_message_container_impl_protobuf_message_traits
     let impl_to_vec_tokens = gen_message_container_impl_to_vec(&msg_container);
     let impl_type_count_tokens = gen_message_container_impl_type_count(&msg_container);
     let impl_to_str_tokens = gen_message_container_impl_to_str(&msg_container);
+    let impl_get_id_map_tokens = gen_message_container_impl_get_id_map(&msg_container);
 
     quote!{
         impl crate::protobuf_message::ProtobufMessageEnumTraits
@@ -76,6 +77,7 @@ fn gen_message_container_impl_protobuf_message_traits
                 #impl_to_vec_tokens
                 #impl_type_count_tokens
                 #impl_to_str_tokens
+                #impl_get_id_map_tokens
             }
         }
 }
@@ -246,6 +248,28 @@ fn gen_message_container_impl_to_vec(message_container: &MessagesContainer) -> T
             }
         }
     }
+}
+
+fn gen_message_container_impl_get_id_map(message_container: &MessagesContainer) -> TokenStream {
+    let mut insert_funcs = Vec::new();
+
+    for msg in &message_container.messages {
+        let val = msg.id as usize;
+        let name = msg.name.to_string();
+        insert_funcs.push(quote! {
+            m.insert( #val , #name );
+        });
+    }
+
+    quote!{
+        fn get_id_map() -> std::collections::BTreeMap<usize, &'static str> {
+            let mut m = std::collections::BTreeMap::new();
+
+            #( #insert_funcs )*
+
+            m
+        }
+    }.into()
 }
 
 fn gen_message_container_impl_to_str(message_container: &MessagesContainer) -> TokenStream {

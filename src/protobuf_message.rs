@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::{io::Read, collections::BTreeMap};
 use buf_redux::BufReader;
 use source_demo_tool_impl_proc_macros::event;
 
@@ -8,6 +8,7 @@ pub trait ProtobufMessageEnumTraits: Send + Sync {
     fn to_vec(&self) -> Vec<(&'static str, ProtobufValue)>;
     fn type_count() -> usize where Self: Sized;
     fn to_str(&self) -> &'static str;
+    fn get_id_map() -> BTreeMap<usize, &'static str> where Self: Sized;
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
