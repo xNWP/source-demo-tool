@@ -1,7 +1,10 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
-- Changed NetMessage::SendTable::SendProp::{ low_value, high_value } from Float32 to Fixed32, closes #3.
+
+### v0.8.0
+- Changes
+    - Changed NetMessage::SendTable::SendProp::{ low_value, high_value } from Float32 to Fixed32, closes #3.
 
 ### v0.7.3
 - Changes
