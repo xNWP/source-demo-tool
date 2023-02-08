@@ -12,7 +12,7 @@ declare_protobuf_messages!(Net, {
     },
     SetConVar = 6 {
         repeated ConVars: Proto  = 1 {
-            optional name: String = 1, 
+            optional name: String = 1,
         },
     },
     SignOnState = 7 {
@@ -53,8 +53,8 @@ declare_protobuf_messages!(Net, {
             optional      priority:  VarInt = 4,
             optional       dt_name:  String = 5,
             optional  num_elements:  VarInt = 6,
-            optional     low_value: Float32 = 7,
-            optional    high_value: Float32 = 8,
+            optional     low_value: Fixed32 = 7,
+            optional    high_value: Fixed32 = 8,
             optional      num_bits:  VarInt = 9,
         }
     },
@@ -75,7 +75,7 @@ declare_protobuf_messages!(Net, {
         optional               table_id: VarInt = 1,
         optional    num_changed_entries: VarInt = 2,
         optional            string_data: Length = 3,
-        
+
     },
     VoiceInit = 14 {
         optional quality: VarInt = 1,

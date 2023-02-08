@@ -1,6 +1,7 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Changed NetMessage::SendTable::SendProp::{ low_value, high_value } from Float32 to Fixed32, closes #3.
 
 ### v0.7.3
 - Changes
@@ -25,7 +26,7 @@
 
 ### v0.6.3
 - Changes
-    - added Self: Sized bound for method type_count. 
+    - added Self: Sized bound for method type_count.
 
 ### v0.6.2
 - Changes
