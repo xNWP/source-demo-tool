@@ -96,7 +96,7 @@ pub struct PacketIndex {
 impl PacketIndex {
     pub fn from_readable(mut reader: impl Read) -> Result<Self, String> {
         let header = Header::from_readable(&mut reader)?;
-        
+
         let mut data = Vec::new();
         data.resize(header.data_length.try_into().unwrap(), 0);
 
@@ -164,7 +164,7 @@ impl CommandInfo {
             inter_view_angles,
             inter_local_view_angles
         })
-    } 
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -177,7 +177,7 @@ pub enum ParseMessageErr {
 pub struct FromProtobufMessagesWarnings {
     pub unknown_fields: Vec<ProtobufMessage>,
     pub missing_fields: Vec<(u8, &'static str)>,
-    pub sub_warnings: Vec<FromProtobufMessagesWarnings>
+    pub sub_warnings: Vec<(&'static str, FromProtobufMessagesWarnings)>
 }
 
 impl FromProtobufMessagesWarnings {
@@ -186,7 +186,7 @@ impl FromProtobufMessagesWarnings {
             return true;
         }
         for sub_warn in &self.sub_warnings {
-            if sub_warn.has_warnings() {
+            if sub_warn.1.has_warnings() {
                 return true;
             }
         }

@@ -493,10 +493,11 @@ fn gen_message_impl_from_protobuf_messages(msg: &Message) -> TokenStream {
                 name: Ident::new(f.name.as_str(), Span::call_site())
             };
             let data_ident = tmp_msg.get_ident();
+            let name_str = f.name.as_str();
 
             let set_value_inner = match f.is_repeated {
-                true => quote!{{ #name .push( #set_value_transform ); sub_warnings.push(warns); }},
-                false => quote!{{ #name = Some( #set_value_transform ); sub_warnings.push(warns); }}
+                true => quote!{{ #name .push( #set_value_transform ); sub_warnings.push((#name_str, warns)); }},
+                false => quote!{{ #name = Some( #set_value_transform ); sub_warnings.push((#name_str, warns)); }}
             };
             set_value = quote!{
                 {
