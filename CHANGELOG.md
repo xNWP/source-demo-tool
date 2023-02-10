@@ -2,7 +2,8 @@
 
 ### Latest/Nightly (this branch)
 - Changes
-    - FromProtobufMessageWarnings::sub_warnings is now a tuple that includes the sub-field name. 
+    - FromProtobufMessageWarnings::sub_warnings is now a tuple that includes the sub-field name.
+    - indexing errors propagate up better now
 
 ### v0.8.0
 - Changes
