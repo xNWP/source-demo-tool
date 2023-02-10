@@ -8,6 +8,8 @@
     - FromProtobufMessageWarnings::sub_warnings is now a tuple that includes the sub-field name.
     - indexing errors propagate up better now
     - Add some new (but unidentified) NetMessages and UserMessages.
+- Internal
+    - set source-demo-tool-impl-proc-macros version to 0.4.0
 
 ### v0.8.0
 - Changes
