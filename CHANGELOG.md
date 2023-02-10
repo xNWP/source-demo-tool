@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Changes
+    - UserMessages::SayText2::params now repeated.
 
 ### v0.9.1
 - Features
