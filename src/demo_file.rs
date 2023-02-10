@@ -33,7 +33,8 @@ pub struct DemoFile {
     pub path: PathBuf,
     pub header: DemoHeader,
     pub frames: Vec<frame::Frame>,
-    pub sign_on_frames: Vec<Frame>
+    pub sign_on_frames: Vec<Frame>,
+    pub last_index_error: Option<String>,
 }
 
 impl DemoFile {
@@ -107,7 +108,7 @@ impl DemoFile {
         drop(tx_to_main);
         drop(rx_from_main);
 
-        Self::index_and_send_frames(reader, &tx_to_workers)?;
+        let last_index_error = Self::index_and_send_frames(reader, &tx_to_workers)?;
         drop(tx_to_workers);
 
         let frames = match Self::receive_parsed_frames(&rx_from_workers){
@@ -125,6 +126,7 @@ impl DemoFile {
                 frames,
                 header,
                 sign_on_frames,
+                last_index_error,
                 path: filepath.clone(),
             }
         )
@@ -149,7 +151,7 @@ impl DemoFile {
         Ok(frames)
     }
 
-    fn index_and_send_frames(mut reader: impl Read + Seek, tx: &Sender<FrameIndex>) -> Result<(), String> {
+    fn index_and_send_frames(mut reader: impl Read + Seek, tx: &Sender<FrameIndex>) -> Result<Option<String>, String> {
         let current_location = reader.stream_position().unwrap();
         let file_length = match reader.seek(SeekFrom::End(0)) {
             Ok(n) => n,
@@ -164,12 +166,12 @@ impl DemoFile {
                 if file_position != file_length {
                     return Err(String::from("bad frame index read"))
                 }
-                return Ok(())
+                return Ok(None)
             }
 
             let frame_index = match FrameIndex::from_readable(&mut reader) {
                 Ok(fi) => fi,
-                Err(e) => return Err(format!("error occured parsing frame index: {:?}", e))
+                Err(e) => return Ok(Some(format!("error occured parsing frame index: {:?}", e)))
             };
 
             if let Err(e) = tx.send_blocking(frame_index) {

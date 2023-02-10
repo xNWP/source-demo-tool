@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - Partial/broken demos can now be opened, if a frame cannot be parsed, the parsing will end early and the last error will be placed in DemoFile::last_index_error.
 - Changes
     - FromProtobufMessageWarnings::sub_warnings is now a tuple that includes the sub-field name.
     - indexing errors propagate up better now
