@@ -201,6 +201,12 @@ impl DemoFile {
                 _ => {}
             }
         }
+        for f in &self.frames {
+            match &f.command {
+                Command::DataTables(dt) => dtables.push(dt),
+                _ => {}
+            }
+        }
         dtables
     }
 
@@ -220,11 +226,41 @@ impl DemoFile {
                 _ => continue
             }
         }
+        for f in &self.frames {
+            match &f.command {
+                Command::SignOn(pd) => {
+                    for msg in &pd.network_messages {
+                        if let Some(nmsg) = &msg.message {
+                            match nmsg {
+                                NetMessage::ServerInfo(si) => return Some(si),
+                                _ => continue
+                            }
+                        }
+                    }
+                },
+                _ => continue
+            }
+        }
         None
     }
 
     pub fn get_game_event_list(self: &Self) -> Option<&GameEventListData> {
         for f in &self.sign_on_frames {
+            match &f.command {
+                Command::SignOn(pd) => {
+                    for msg in &pd.network_messages {
+                        if let Some(nmsg) = &msg.message {
+                            match nmsg {
+                                NetMessage::GameEventList(gel) => return Some(gel),
+                                _ => continue
+                            }
+                        }
+                    }
+                },
+                _ => continue
+            }
+        }
+        for f in &self.frames {
             match &f.command {
                 Command::SignOn(pd) => {
                     for msg in &pd.network_messages {
