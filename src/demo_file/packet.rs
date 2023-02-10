@@ -98,11 +98,12 @@ impl PacketIndex {
         let header = Header::from_readable(&mut reader)?;
 
         let mut data = Vec::new();
+
         data.resize(header.data_length.try_into().unwrap(), 0);
 
         match reader.read_exact(data.as_mut_slice()) {
             Ok(()) => Ok(PacketIndex{header, data}),
-            Err(_) => Err(String::from("couldn't read data into buffer"))
+            Err(e) => Err(format!("couldn't read data into buffer: {}", e.to_string()))
         }
     }
 }

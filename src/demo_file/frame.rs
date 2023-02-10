@@ -226,27 +226,39 @@ impl CommandIndex {
             command_id::SIGN_ON => Ok(
                 Self::SignOn(match PacketIndex::from_readable(&mut reader) {
                     Ok(soi) => soi,
-                    Err(_e) => return Err(event!{"SignOnIndex parse error"})
+                    Err(e) => {
+                        let mut ev = event!{""};
+                        ev.details = format!("SignOnIndex parse error: {}", e);
+                        return Err(ev)
+                    }
                 })
             ),
             command_id::PACKET => Ok(
                 Self::Packet(match PacketIndex::from_readable(&mut reader) {
                     Ok(pi) => pi,
-                    Err(_e) => return Err(event!{"PacketIndex parse error"})
+                    Err(e) => {
+                        let mut ev = event!{""};
+                        ev.details = format!("PacketIndex parse error: {}", e);
+                        return Err(ev)
+                    }
                 })
             ),
             command_id::SYNC_TICK => Ok(Self::SyncTick),
             command_id::DATA_TABLES => Ok(
                 Self::DataTables(match DataTablesIndex::from_readable(&mut reader) {
                     Ok(dti) => dti,
-                    Err(_e) => return Err(event!{"DataTablesIndex parse error"})
+                    Err(e) => {
+                        let mut ev = event!{""};
+                        ev.details = format!("DataTablesIndex parse error: {}", e);
+                        return Err(ev)
+                    }
                 })
             ),
             command_id::STOP => Ok(Self::Stop),
             _ => {
                 let mut ev = event!{""};
                 ev.details = format!{"unsupported command number: {}", num};
-                Err(ev)
+                return Err(ev)
             }
         }
     }
