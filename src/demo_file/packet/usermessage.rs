@@ -11,7 +11,7 @@ declare_protobuf_messages!(User, {
         optional      ent_sidx: VarInt = 1,
         optional          chat: VarInt = 2,
         optional      msg_name: String = 3,
-        optional        params: String = 4,
+        repeated        params: String = 4,
         optional text_all_chat: VarInt = 5,
     },
     TextMsg = 7 {
