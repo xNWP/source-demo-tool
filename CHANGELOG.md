@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.9.1
 - Features
     - Added as_u64() for ProtobufMessageEnumTraits which returns the messages id.
 - Bug Fixes
