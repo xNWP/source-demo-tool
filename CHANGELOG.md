@@ -7,6 +7,7 @@
 - Changes
     - FromProtobufMessageWarnings::sub_warnings is now a tuple that includes the sub-field name.
     - indexing errors propagate up better now
+    - Add some new (but unidentified) NetMessages and UserMessages.
 
 ### v0.8.0
 - Changes

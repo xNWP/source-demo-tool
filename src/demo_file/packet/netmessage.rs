@@ -98,6 +98,7 @@ declare_protobuf_messages!(Net, {
             optional    sound_num_handle: Fixed32 = 12,
             optional         random_seed:  VarInt = 14,
             optional         sound_level:  VarInt = 15,
+            optional           unknown17:  VarInt = 17,
         },
     },
     SetView = 18 {

@@ -2,7 +2,10 @@ use source_demo_tool_impl_proc_macros::declare_protobuf_messages;
 
 declare_protobuf_messages!(User, {
     SayText = 5 {
-        text: String = 2,
+        optional unknown1: VarInt = 1,
+                     text: String = 2,
+        optional unknown3: VarInt = 3,
+        optional unknown4: VarInt = 4,
     },
     SayText2 = 6 {
         optional      ent_sidx: VarInt = 1,
@@ -52,6 +55,23 @@ declare_protobuf_messages!(User, {
         },
         optional user_id: VarInt = 5,
         optional     crc: VarInt = 6,
+    },
+    Unknown38 = 38 {
+
+    },
+    Unknown46 = 46 {
+        unknown1: VarInt = 1,
+        unknown2: VarInt = 2,
+        unknown3: VarInt = 3,
+        unknown4: Length = 4,
+        unknown5: Length = 5,
+        unknown6: Length = 6,
+    },
+    Unknown47 = 47 {
+        unknown1: VarInt = 1,
+        unknown2: VarInt = 2,
+        unknown3: Length = 3,
+        unknown4: Length = 4,
     },
     ServerRankRevealAll = 50 {
 
