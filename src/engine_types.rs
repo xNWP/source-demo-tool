@@ -14,7 +14,7 @@ impl Vector3F64 {
         let y = parse_f64(&mut reader);
         let z = parse_f64(&mut reader);
 
-        if x.or(y.or(z)).is_err() {
+        if x.is_err() || y.is_err() || z.is_err() {
             return Err("couldn't parse vector")
         }
 

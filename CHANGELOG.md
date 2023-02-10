@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Bug Fixes
+    - Fixed bug in Vector3F64::from_readable() that would cause a crash with partial/broken demos.
 - Changes
     - Add some new (but unidentified) NetMessages.
 
