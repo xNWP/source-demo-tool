@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Changes
+    - Add some new (but unidentified) NetMessages.
 
 ### v0.9.0
 - Features

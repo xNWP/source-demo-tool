@@ -104,6 +104,13 @@ declare_protobuf_messages!(Net, {
     SetView = 18 {
         optional entity_index: VarInt = 1,
     },
+    Unknown21 = 21 {
+        unknown1: Length = 1,
+        unknown2: VarInt = 2,
+        unknown3: VarInt = 3,
+        unknown4: VarInt = 4,
+        unknown5: VarInt = 5,
+    },
     UserMessage = 23 {
         optional msg_type: VarInt = 1,
         optional msg_data: Length = 2,
@@ -139,12 +146,16 @@ declare_protobuf_messages!(Net, {
     },
     GameEventList = 30 {
         repeated Descriptors: Proto = 1 {
-            optional          event_id: VarInt = 1,
-            optional              name: String = 2,
-            repeated    DescriptorKeys:  Proto = 3 {
+            optional                event_id: VarInt = 1,
+            optional                    name: String = 2,
+            optional repeated DescriptorKeys:  Proto = 3 {
                 optional key_type: VarInt = 1,
                 optional key_name: String = 2,
             },
         },
+    },
+    Unknown100 = 100 {
+        optional unknown1: VarInt = 1,
+        unknown2: Length = 2,
     },
 });
