@@ -70,6 +70,7 @@ fn gen_message_container_impl_protobuf_message_traits
     let impl_type_count_tokens = gen_message_container_impl_type_count(&msg_container);
     let impl_to_str_tokens = gen_message_container_impl_to_str(&msg_container);
     let impl_get_id_map_tokens = gen_message_container_impl_get_id_map(&msg_container);
+    let impl_as_u64_tokens = gen_message_container_impl_as_u64(&msg_container);
 
     quote!{
         impl crate::protobuf_message::ProtobufMessageEnumTraits
@@ -78,6 +79,7 @@ fn gen_message_container_impl_protobuf_message_traits
                 #impl_type_count_tokens
                 #impl_to_str_tokens
                 #impl_get_id_map_tokens
+                #impl_as_u64_tokens
             }
         }
 }
@@ -248,6 +250,25 @@ fn gen_message_container_impl_to_vec(message_container: &MessagesContainer) -> T
             }
         }
     }
+}
+
+fn gen_message_container_impl_as_u64(message_container: &MessagesContainer) -> TokenStream {
+    let mut match_funcs = Vec::new();
+    for msg in &message_container.messages {
+        let id = msg.id;
+        let ident = &msg.name;
+        match_funcs.push(quote! {
+            Self:: #ident (_) => #id
+        });
+    }
+
+    quote! {
+        fn as_u64(&self) -> u64 {
+            match self {
+                #( #match_funcs ),*
+            }
+        }
+    }.into()
 }
 
 fn gen_message_container_impl_get_id_map(message_container: &MessagesContainer) -> TokenStream {

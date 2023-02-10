@@ -1,10 +1,14 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Features
+    - Added as_u64() for ProtobufMessageEnumTraits which returns the messages id.
 - Bug Fixes
     - Fixed bug in Vector3F64::from_readable() that would cause a crash with partial/broken demos.
 - Changes
     - Add some new (but unidentified) NetMessages.
+- Internal
+    - set source-demo-tool-impl-proc-macros version to 0.4.1
 
 ### v0.9.0
 - Features

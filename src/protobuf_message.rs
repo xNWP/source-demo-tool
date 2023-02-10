@@ -9,6 +9,7 @@ pub trait ProtobufMessageEnumTraits: Send + Sync {
     fn type_count() -> usize where Self: Sized;
     fn to_str(&self) -> &'static str;
     fn get_id_map() -> BTreeMap<usize, &'static str> where Self: Sized;
+    fn as_u64(&self) -> u64;
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
