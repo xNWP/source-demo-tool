@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.9.0
 - Features
     - Partial/broken demos can now be opened, if a frame cannot be parsed, the parsing will end early and the last error will be placed in DemoFile::last_index_error.
     - DemoFile::{ get_data_tables(), get_server_info(), get_game_event_list() } now additionally search main demo frames for data (seen in partial/broken demos).
