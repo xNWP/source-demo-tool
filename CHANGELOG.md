@@ -6,6 +6,8 @@
 - Changes
     - UserMessages::SayText2::params now repeated.
     - Added numerous new UserMessages and NetMessages, also refined qualifiers on each.
+- Internal
+    - set source-demo-tool-impl-proc-macros version 0.4.2
 
 ### v0.9.1
 - Features
