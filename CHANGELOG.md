@@ -1,6 +1,8 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+
+### v0.9.2
 - Features
     - Added FromProtobufMessagesWarnings::repeated_fields, if a message field is marked as not repeated, but we receive multiple messages, this field will be populated with the offending field's id. (only the last message is kept in the final data).
 - Changes
