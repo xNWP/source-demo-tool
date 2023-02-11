@@ -5,6 +5,7 @@
     - Added FromProtobufMessagesWarnings::repeated_fields, if a message field is marked as not repeated, but we receive multiple messages, this field will be populated with the offending field's id. (only the last message is kept in the final data).
 - Changes
     - UserMessages::SayText2::params now repeated.
+    - Added numerous new UserMessages and NetMessages, also refined qualifiers on each.
 
 ### v0.9.1
 - Features
