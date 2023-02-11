@@ -178,12 +178,13 @@ pub enum ParseMessageErr {
 pub struct FromProtobufMessagesWarnings {
     pub unknown_fields: Vec<ProtobufMessage>,
     pub missing_fields: Vec<(u8, &'static str)>,
-    pub sub_warnings: Vec<(&'static str, FromProtobufMessagesWarnings)>
+    pub sub_warnings: Vec<(&'static str, FromProtobufMessagesWarnings)>,
+    pub repeated_fields: Vec<u8>,
 }
 
 impl FromProtobufMessagesWarnings {
     pub fn has_warnings(&self) -> bool {
-        if !self.unknown_fields.is_empty() || !self.missing_fields.is_empty() {
+        if !self.unknown_fields.is_empty() || !self.missing_fields.is_empty() || !self.repeated_fields.is_empty() {
             return true;
         }
         for sub_warn in &self.sub_warnings {

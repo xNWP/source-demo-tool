@@ -225,7 +225,7 @@ fn gen_message_container_parse_from_bufredux_reader(message_container: &Messages
 
             Ok(( message, warnings ))
         }
-    ).into()
+    )
 }
 
 fn gen_message_container_impl_to_vec(message_container: &MessagesContainer) -> TokenStream {
@@ -506,6 +506,8 @@ fn gen_message_impl_from_protobuf_messages(msg: &Message) -> TokenStream {
             _ => quote!{ x }
         };
 
+        let id = f.id;
+
         let set_value;
         if f.wire_type == WireType::Proto {
             let tmp_msg = Message {
@@ -518,7 +520,15 @@ fn gen_message_impl_from_protobuf_messages(msg: &Message) -> TokenStream {
 
             let set_value_inner = match f.is_repeated {
                 true => quote!{{ #name .push( #set_value_transform ); sub_warnings.push((#name_str, warns)); }},
-                false => quote!{{ #name = Some( #set_value_transform ); sub_warnings.push((#name_str, warns)); }}
+                false => quote!{{
+                    if #name .is_some() {
+                        if repeated_fields.binary_search(& #id).is_err() {
+                            repeated_fields.push( #id );
+                        }
+                    }
+                    #name = Some( #set_value_transform );
+                    sub_warnings.push((#name_str, warns));
+                }}
             };
             set_value = quote!{
                 {
@@ -546,7 +556,14 @@ fn gen_message_impl_from_protobuf_messages(msg: &Message) -> TokenStream {
         } else {
             set_value = match f.is_repeated {
                 true => quote!( #name .push( #set_value_transform ) ),
-                false => quote!( #name = Some( #set_value_transform ) )
+                false => quote!{{
+                    if #name .is_some() {
+                        if repeated_fields.binary_search(& #id).is_err() {
+                            repeated_fields.push( #id );
+                        }
+                    }
+                    #name = Some(#set_value_transform);
+                }}
             };
         }
         field_match_funcs.push(quote! {
@@ -560,7 +577,6 @@ fn gen_message_impl_from_protobuf_messages(msg: &Message) -> TokenStream {
         });
 
         if !f.is_optional {
-            let id = f.id;
             if f.is_repeated {
                 mandatory_field_checks.push(quote! {
                     if #name.is_empty() {
@@ -580,13 +596,14 @@ fn gen_message_impl_from_protobuf_messages(msg: &Message) -> TokenStream {
     let id_ident = get_id_mod_ident(msg);
     let struct_ident = msg.get_ident();
 
-    quote!{
+    quote! {
         fn from_protobuf_messages(messages: Vec<ProtobufMessage>) -> Result<(Self, crate::demo_file::packet::FromProtobufMessagesWarnings), crate::event_data::EventData> {
             #( #field_declarations )*
 
             type FnWarns = crate::demo_file::packet::FromProtobufMessagesWarnings;
             let mut sub_warnings = Vec::new();
             let mut unknown_fields = Vec::new();
+            let mut repeated_fields = Vec::new();
 
             for msg in messages {
                 match msg.field_number {
@@ -600,7 +617,7 @@ fn gen_message_impl_from_protobuf_messages(msg: &Message) -> TokenStream {
 
             Ok((
                 #struct_ident { #( #field_names ),* },
-                FnWarns { unknown_fields, missing_fields, sub_warnings }
+                FnWarns { unknown_fields, missing_fields, sub_warnings, repeated_fields }
             ))
         }
     }
@@ -671,6 +688,7 @@ fn to_snake(input: String, screaming: bool) -> String {
     output
 }
 
+#[derive(Debug)]
 struct MessagesContainer {
     name: String,
     messages: Vec<Message>
@@ -700,7 +718,7 @@ impl Parse for MessagesContainer {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct Message {
     name: Ident,
     fields: Vec<MessageField>,
@@ -732,7 +750,7 @@ impl Parse for Message {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct MessageField {
     is_optional: bool,
     is_repeated: bool,
@@ -837,7 +855,7 @@ mod kw {
     custom_keyword!(repeated);
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum WireType {
     VarInt,
     Length,
