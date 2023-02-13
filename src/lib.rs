@@ -3,9 +3,45 @@ pub mod engine_types;
 pub mod event_data;
 
 mod parse_tools;
+mod bitbuf;
+
 pub mod protobuf_message;
 
 pub extern crate source_demo_tool_impl_proc_macros;
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use crate::demo_file::{DemoFile, frame::Command, packet::{MessageParseReturn, netmessage::NetMessage}};
+
+    use crate::demo_file::packet::netmessage::PacketEntityDataParse;
+    #[test]
+    fn test_packets() -> Result<(), String> {
+        let df = match DemoFile::open(&PathBuf::from("assets/test_demos/full_gotv.dem")) {
+            Ok(x) => x,
+            Err(s) => return Err(s.into())
+        };
+
+        let si = df.get_server_info().unwrap();
+
+        for f in &df.frames {
+            if let Command::Packet(pd) = &f.command {
+                for nmsg_ret in &pd.network_messages {
+                    if let NetMessage::PacketEntity(ped) = nmsg_ret.message.as_ref().unwrap() {
+                        println!(
+                            "{:#?}",
+                            ped.parse(si.max_classes.unwrap())
+                        );
+                        return Ok(())
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
 
 /*
 #[cfg(test)]

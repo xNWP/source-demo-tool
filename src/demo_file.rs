@@ -15,13 +15,13 @@ use buf_redux::BufReader;
 //use kdam::{tqdm, BarExt};
 
 use self::{
-    frame::{ Frame, FrameIndex, DataTablesData, Command, },
+    frame::{ Frame, FrameIndex, DataTablesData, Command, DataTablesClassDescription, },
     header::DemoHeader,
     packet::netmessage::{
         NetMessage,
         GameEventListData,
         ServerInfoData,
-        UserMessageData,
+        UserMessageData, SendTableData, SendPropData,
     },
     packet::usermessage::{
         UserMessage,
@@ -35,6 +35,104 @@ pub struct DemoFile {
     pub frames: Vec<frame::Frame>,
     pub sign_on_frames: Vec<Frame>,
     pub last_index_error: Option<String>,
+}
+
+pub struct ParsedDataTables {
+    class_descs: Vec<DataTablesClassDescription>,
+}
+
+pub struct ParsedSendTable {
+    needs_decoder: bool,
+    net_table_name: String,
+    props: Vec<ParsedSendProp>,
+}
+
+pub struct ParsedSendProp {
+    dt_name: Option<String>,
+    sp_type: SendPropType,
+}
+
+enum SendPropType {
+    Int,
+    Float,
+    Vector,
+    VectorXY,
+    String,
+    Array,
+    DataTable,
+    Int64,
+}
+
+impl ParsedSendProp {
+    pub fn new(spd: &SendPropData) -> Result<Self, String> {
+        
+        Ok(Self {
+            dt_name: match &spd.dt_name {
+                Some(x) => Some(x.clone()),
+                None => None
+            },
+            sp_type: match spd.sendprop_type {
+                Some(x) => match x {
+                    0 => SendPropType::Int,
+                    1 => SendPropType::Float,
+                    2 => SendPropType::Vector,
+                    3 => SendPropType::VectorXY,
+                    4 => SendPropType::String,
+                    5 => SendPropType::Array,
+                    6 => SendPropType::DataTable,
+                    7 => SendPropType::Int64,
+                    ty => return Err(format!("bad sendprop type: {}", ty))
+                },
+                None => return Err("no sendprop type".into())
+            },
+        })
+    }
+}
+
+pub mod send_prop_flags {
+    pub const                 UNSIGNED: i32 = 1 << 0;
+    pub const                    COORD: i32 = 1 << 1;
+    pub const                  NOSCALE: i32 = 1 << 2;
+    pub const               ROUND_DOWN: i32 = 1 << 3;
+    pub const                 ROUND_UP: i32 = 1 << 4;
+    pub const                   NORMAL: i32 = 1 << 5;
+    pub const                  EXCLUDE: i32 = 1 << 6;
+    pub const                     XYZE: i32 = 1 << 7;
+    pub const             INSIDE_ARRAY: i32 = 1 << 8;
+    pub const             PROXY_ALWAYS: i32 = 1 << 9;
+    pub const         IS_A_VECTOR_ELEM: i32 = 1 << 10;
+    pub const              COLLAPSIBLE: i32 = 1 << 11;
+    pub const                 COORD_MP: i32 = 1 << 12;
+    pub const   COORD_MP_LOW_PRECISION: i32 = 1 << 13;
+    pub const        COORD_MP_INTEGRAL: i32 = 1 << 14;
+    pub const               CELL_COORD: i32 = 1 << 15;
+    pub const CELL_COORD_LOW_PRECISION: i32 = 1 << 16;
+    pub const      CELL_COORD_INTEGRAL: i32 = 1 << 17;
+    pub const            CHANGES_OFTEN: i32 = 1 << 18;
+    pub const                  VAR_INT: i32 = 1 << 19;
+}
+
+impl ParsedSendTable {
+    pub fn new(std: &SendTableData) -> Result<Self, String> {
+        let mut props = Vec::new();
+        for p in &std.SendProp {
+            props.push(ParsedSendProp::new(p)?);
+        }
+
+        Ok(Self {
+            props,
+            needs_decoder: std.needs_decoder.unwrap() > 0,
+            net_table_name: std.net_table_name.as_ref().unwrap().clone(),
+        })
+    }
+}
+
+impl ParsedDataTables {
+    pub fn new(dtd: &DataTablesData) -> Self {
+        Self {
+            class_descs: dtd.class_descriptions.clone(),
+        }
+    }
 }
 
 impl DemoFile {
@@ -193,21 +291,20 @@ impl DemoFile {
         }
     }
 
-    pub fn get_data_tables(self: &Self) -> Vec<&DataTablesData> {
-        let mut dtables = Vec::new();
+    pub fn get_data_tables(self: &Self) -> Option<&DataTablesData> {
         for f in &self.sign_on_frames {
             match &f.command {
-                Command::DataTables(dt) => dtables.push(dt),
+                Command::DataTables(dt) => return Some(dt),
                 _ => {}
             }
         }
         for f in &self.frames {
             match &f.command {
-                Command::DataTables(dt) => dtables.push(dt),
+                Command::DataTables(dt) => return Some(dt),
                 _ => {}
             }
         }
-        dtables
+        None
     }
 
     pub fn get_server_info(self: &Self) -> Option<&ServerInfoData> {

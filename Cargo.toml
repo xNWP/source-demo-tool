@@ -14,5 +14,6 @@ repository = "https://github.com/xNWP/source-demo-tool/"
 async-channel = "1.8.0"
 buf_redux = "0.8.4"
 source-demo-tool-impl-proc-macros = { path = "impl-proc-macros", version = "0.4.1" }
+ilog = "0.1.4"
 
 [workspace]
