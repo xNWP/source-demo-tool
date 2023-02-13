@@ -1,6 +1,9 @@
 # Changelog
 
 ### Latest/Nightly (this branch)
+- Changes
+    - DemoFile::from_data_tables_index() Err type is now String (includes further info).
+    - DataTablesData now includes any message warnings, errors are not kept as an error cannot be recovered from in DataTablesData::from_data_tables_index().
 
 ### v0.9.2
 - Features

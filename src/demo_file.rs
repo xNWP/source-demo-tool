@@ -132,7 +132,7 @@ impl DemoFile {
         )
     }
 
-    fn receive_parsed_frames(rx: &Receiver<Result<Frame, &'static str>>) -> Result<Vec<Frame>, &'static str> {
+    fn receive_parsed_frames(rx: &Receiver<Result<Frame, String>>) -> Result<Vec<Frame>, String> {
         let mut frames = Vec::new();
 
         // receive frames (out of order)
@@ -180,7 +180,7 @@ impl DemoFile {
         }
     }
 
-    fn worker_thread_receive_parse_and_send(rx: Receiver<FrameIndex>, tx: Sender<Result<Frame, &'static str>>) {
+    fn worker_thread_receive_parse_and_send(rx: Receiver<FrameIndex>, tx: Sender<Result<Frame, String>>) {
         loop {
             let frame_index = match rx.recv_blocking() {
                 Ok(f) => f,

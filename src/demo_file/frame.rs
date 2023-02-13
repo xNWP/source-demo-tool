@@ -13,6 +13,8 @@ use source_demo_tool_impl_proc_macros::event;
 
 use buf_redux::BufReader;
 
+use super::packet::FromProtobufMessagesWarnings;
+
 #[derive(Debug, Clone)]
 pub struct Frame {
     pub command: Command,
@@ -21,7 +23,7 @@ pub struct Frame {
 }
 
 impl Frame {
-    pub fn from_frame_index(frame_index: FrameIndex) -> Result<Self, &'static str> {
+    pub fn from_frame_index(frame_index: FrameIndex) -> Result<Self, String> {
         let command = frame_index.command_index.try_into()?;
         let tick = frame_index.tick;
         let player_slot = frame_index.player_slot;
@@ -83,7 +85,7 @@ pub enum Command {
 }
 
 impl TryFrom<CommandIndex> for Command {
-    type Error = &'static str;
+    type Error = String;
     fn try_from(value: CommandIndex) -> Result<Self, Self::Error> {
         match value {
             CommandIndex::Packet(pi)      => Ok(Command::Packet(PacketData::from_packet_index(pi))),
@@ -143,7 +145,7 @@ impl DataTablesIndex {
 
 #[derive(Debug, Clone)]
 pub struct DataTablesData {
-    pub send_tables: Vec<SendTableData>,
+    pub send_tables: Vec<(SendTableData, FromProtobufMessagesWarnings)>,
     pub class_descriptions: Vec<DataTablesClassDescription>,
 }
 
@@ -155,7 +157,7 @@ pub struct DataTablesClassDescription {
 }
 
 impl DataTablesData {
-    pub fn from_data_tables_index(dti: DataTablesIndex) -> Result<Self, &'static str> {
+    pub fn from_data_tables_index(dti: DataTablesIndex) -> Result<Self, String> {
         let mut data_reader = BufReader::with_capacity
             (dti.data.len(), dti.data.as_slice());
 
@@ -166,24 +168,24 @@ impl DataTablesData {
         while data_reader.buf_len() > 0 {
             let net_result = NetMessage::parse_from_bufredux_reader(&mut data_reader);
 
-            let mut message = None;
-            if let Ok((msg, _warn)) = net_result {
-                message = Some(msg);
-            }
+            let message_warns = match net_result {
+                Ok(msg) => msg,
+                Err(e) => return Err(format!("couldn't parse SendTable message: {:?}", e))
+            };
 
-            if message.is_none() {
-                return Err("couldn't parse SendTable message")
-            }
+            let is_end = match message_warns.0 {
+                NetMessage::SendTable(std) => {
+                    let isend = if let Some(x) = &std.is_end {
+                        *x > 0
+                    } else {
+                        false
+                    };
 
-            let mut is_end = false;
-            if let NetMessage::SendTable(st) = message.unwrap() {
-                if st.is_end.is_some() {
-                    is_end = st.is_end.unwrap() > 0;
-                }
-                send_tables.push(st);
-            } else {
-                return Err("expected SendTable messages only")
-            }
+                    send_tables.push((std, message_warns.1));
+                    isend
+                },
+                ty => return Err(format!("expected SendTable messages only, got: {:?}", ty))
+            };
 
             if is_end { // breakout to read class descriptions
                 break;
@@ -204,7 +206,10 @@ impl DataTablesData {
             }
 
             if class_descriptions.len() != class_count as usize {
-                return Err("too little or too many class descriptions were received")
+                return Err(format!("class_descriptions.len[{}] != class_count[{}]",
+                    class_descriptions.len(),
+                    class_count
+                ));
             }
         }
 
