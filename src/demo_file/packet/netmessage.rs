@@ -228,14 +228,17 @@ impl PacketEntityDataParse for PacketEntityData {
                 break;
             }
 
+            println!("header_count: {}\nold_entity_idx: {}", ent_ri.header_count, old_entity_idx);
            // let mut update_flags = UpdateFlags::new(0);
             ent_ri.header_count -= 1;
 
+            println!("idx pre parse_delta_header: {}", ent_ri.new_ent_idx);
             if ent_ri.header_count >= 0 {
                 parse_delta_header(&mut ent_ri);
             } else {
                 todo!("Not entity");
             }
+            println!("idx post parse_delta_header: {}", ent_ri.new_ent_idx);
             let mut field_indices = Vec::new();
 
             update_type = UpdateType::PreserveEnt;
@@ -270,7 +273,7 @@ impl PacketEntityDataParse for PacketEntityData {
                         assert!(!(self.is_delta.unwrap() > 0), "Must be delta update.");
                     },
                     UpdateType::DeltaEnt => {
-
+                        todo!("not done");
                     },
                     ty => todo!("UpdateType not supported: {:?}", ty)
                 }
@@ -436,7 +439,10 @@ fn read_field_lists(buf: &mut BitBuf) {
 
         offsets.push(data_offset - start_bit);
 
+        let path = f.0;
     }
+
+    println!("offsets: {:?}", offsets);
 }
 
 fn read_field_paths(buf: &mut BitBuf) -> Vec<(i32, i32)> {
@@ -446,6 +452,7 @@ fn read_field_paths(buf: &mut BitBuf) -> Vec<(i32, i32)> {
     loop {
         let value = reader.read_next_prop_idx(buf);
 
+        println!("{:?}", value);
         if value.0 == -1 {
             break
         }
@@ -473,9 +480,7 @@ impl DeltaBitsReader {
 
     pub fn read_next_prop_idx(&mut self, buf: &mut BitBuf) -> (i32, i32) {
         if self.using_new_scheme {
-            println!("A here");
             if buf.read_one_bit() {
-                println!("B here");
                 self.last_prop_idx += 1;
                 return (self.last_prop_idx, 1)
             }
@@ -486,14 +491,18 @@ impl DeltaBitsReader {
         let end_bit: i32 = buf.get_bits_read().try_into().unwrap();
         let bits_read = end_bit - start_bit;
 
+        println!("idx: {}", idx);
+        println!("bits_read: {}", bits_read);
+        println!("last_prop_idx: {}", self.last_prop_idx);
+
         if idx == (1 << 12) - 1 {
-            println!("C here, idx: {}", idx);
             return (-1, bits_read)
         }
 
         let mut prop = (1 + idx).try_into().unwrap();
         prop += self.last_prop_idx;
         self.last_prop_idx = prop;
+
         (prop, bits_read)
     }
 
@@ -506,9 +515,9 @@ impl DeltaBitsReader {
 
         let rval = buf.read_ubit_long(7);
         match rval & (32 | 64) {
-            32 => (rval & 31) | (buf.read_ubit_long(2) << 5),
-            64 => (rval & 31) | (buf.read_ubit_long(4) << 5),
-            96 => (rval & 31) | (buf.read_ubit_long(7) << 5),
+            32 => (rval & !96) | (buf.read_ubit_long(2) << 5),
+            64 => (rval & !96) | (buf.read_ubit_long(4) << 5),
+            96 => (rval & !96) | (buf.read_ubit_long(7) << 5),
             _ => rval
         }
     }

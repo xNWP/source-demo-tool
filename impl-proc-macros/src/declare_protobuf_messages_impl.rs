@@ -349,7 +349,7 @@ fn gen_message_struct_def(msg: &Message) -> TokenStream {
     for f in &msg.fields {
         let name = Ident::new(f.name.as_str(), Span::call_site());
 
-        let ty = f.get_type(!f.is_repeated);
+        let ty = f.get_parse_type();
 
         if f.wire_type == WireType::Proto {
             let sub_msg = Message {
@@ -485,7 +485,7 @@ fn gen_message_impl_from_protobuf_messages(msg: &Message) -> TokenStream {
                 let mut #name = Vec::new();
             });
         } else {
-            let ty = f.get_type(true);
+            let ty = f.get_parse_type();
             field_declarations.push(quote!{
                 let mut #name: #ty = None;
             });
@@ -761,7 +761,7 @@ struct MessageField {
 }
 
 impl MessageField {
-    fn get_type(&self, optional: bool) -> Type {
+    fn get_parse_type(&self) -> Type {
         let mut ty: String = match self.wire_type {
             WireType::VarInt => "u64".into(),
             WireType::Length => "Vec<u8>".into(),
@@ -772,9 +772,7 @@ impl MessageField {
         };
         if self.is_repeated {
             ty = "Vec<".to_owned() + &ty + ">";
-        }
-
-        if optional {
+        } else {
             ty = "Option<".to_owned() + &ty + ">";
         }
         syn::parse_str::<Type>(ty.as_str()).unwrap()
@@ -839,7 +837,14 @@ impl Parse for MessageField {
             }
         };
 
-        Ok(MessageField { is_optional, is_repeated, name, wire_type, id, sub_messages })
+        Ok(MessageField {
+            is_optional,
+            is_repeated,
+            name,
+            wire_type,
+            id,
+            sub_messages,
+        })
     }
 }
 

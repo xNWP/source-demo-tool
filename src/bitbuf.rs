@@ -23,6 +23,7 @@ impl BitBuf {
     }
 
     fn get_next_dword(&mut self) -> bool {
+        println!("got dword");
         if self.next_index >= self.data.len() || self.act_bits_left > 0 {
             false
         } else {
